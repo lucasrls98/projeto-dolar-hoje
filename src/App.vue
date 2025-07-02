@@ -1,0 +1,178 @@
+<template>
+  <div class="app-container">
+    <header class="header">
+      <h1 class="title">
+        <span class="title-emoji">💵</span>
+        <span class="title-text">Dólar Hoje</span>
+      </h1>
+      <p class="subtitle">Cotação em tempo real</p>
+    </header>
+
+    <main class="main-content">
+      <div class="cards-container">
+        <!-- Exchange Rate Card -->
+        <ExchangeRateCard
+          :exchange-rate="exchangeRate"
+          :loading="loading"
+          :error="error"
+          :last-update="lastUpdate"
+          :variation="variation"
+          @refresh="fetchExchangeRate"
+          @retry="fetchExchangeRate"
+        />
+
+        <!-- Currency Converter Card -->
+        <CurrencyConverter
+          :exchange-rate="exchangeRate"
+          :input-amount="inputAmount"
+          :is-usd-to-brl="isUsdToBrl"
+          @update:input-amount="updateInputAmount"
+          @invert="invertConversion"
+        />
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>Dados fornecidos por APIs públicas de câmbio</p>
+    </footer>
+  </div>
+</template>
+
+<script>
+import ExchangeRateCard from './components/ExchangeRateCard.vue'
+import CurrencyConverter from './components/CurrencyConverter.vue'
+import { useExchangeRate } from './composables/useExchangeRate'
+import { useCurrencyConverter } from './composables/useCurrencyConverter'
+
+export default {
+  name: 'App',
+  components: {
+    ExchangeRateCard,
+    CurrencyConverter
+  },
+  setup() {
+    const {
+      exchangeRate,
+      loading,
+      error,
+      lastUpdate,
+      variation,
+      fetchExchangeRate
+    } = useExchangeRate()
+
+    const {
+      inputAmount,
+      isUsdToBrl,
+      convertedAmount,
+      invertConversion,
+      updateInputAmount
+    } = useCurrencyConverter(exchangeRate)
+
+    return {
+      exchangeRate,
+      loading,
+      error,
+      lastUpdate,
+      variation,
+      inputAmount,
+      isUsdToBrl,
+      convertedAmount,
+      fetchExchangeRate,
+      invertConversion,
+      updateInputAmount
+    }
+  }
+}
+</script>
+
+<style scoped>
+.app-container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.title-emoji {
+  font-size: 2.5rem;
+  filter: none;
+  background: none;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: initial;
+  background-clip: initial;
+}
+
+.title-text {
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cards-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .cards-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.75rem;
+  }
+}
+</style> 
