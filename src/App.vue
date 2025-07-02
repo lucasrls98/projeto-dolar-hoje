@@ -29,6 +29,17 @@
           @update:input-amount="updateInputAmount"
           @invert="invertConversion"
         />
+
+        <!-- Work Calculator Card -->
+        <WorkCalculator
+          :exchange-rate="exchangeRate"
+          :gross-amount="grossAmount"
+          :fees="fees"
+          :taxes="taxes"
+          @update:gross-amount="updateGrossAmount"
+          @update:fees="updateFees"
+          @update:taxes="updateTaxes"
+        />
       </div>
     </main>
 
@@ -41,14 +52,17 @@
 <script>
 import ExchangeRateCard from './components/ExchangeRateCard.vue'
 import CurrencyConverter from './components/CurrencyConverter.vue'
+import WorkCalculator from './components/WorkCalculator.vue'
 import { useExchangeRate } from './composables/useExchangeRate'
 import { useCurrencyConverter } from './composables/useCurrencyConverter'
+import { useWorkCalculator } from './composables/useWorkCalculator'
 
 export default {
   name: 'App',
   components: {
     ExchangeRateCard,
-    CurrencyConverter
+    CurrencyConverter,
+    WorkCalculator
   },
   setup() {
     const {
@@ -68,6 +82,15 @@ export default {
       updateInputAmount
     } = useCurrencyConverter(exchangeRate)
 
+    const {
+      grossAmount,
+      fees,
+      taxes,
+      updateGrossAmount,
+      updateFees,
+      updateTaxes
+    } = useWorkCalculator()
+
     return {
       exchangeRate,
       loading,
@@ -77,9 +100,15 @@ export default {
       inputAmount,
       isUsdToBrl,
       convertedAmount,
+      grossAmount,
+      fees,
+      taxes,
       fetchExchangeRate,
       invertConversion,
-      updateInputAmount
+      updateInputAmount,
+      updateGrossAmount,
+      updateFees,
+      updateTaxes
     }
   }
 }
@@ -87,7 +116,7 @@ export default {
 
 <style scoped>
 .app-container {
-  max-width: 1200px;
+  max-width: 1400px;
   width: 100%;
   margin: 0 auto;
   display: flex;
@@ -143,9 +172,28 @@ export default {
 .cards-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-template-areas: 
+    "exchange converter"
+    "work work";
   gap: 2rem;
   width: 100%;
-  max-width: 1000px;
+  max-width: 1200px;
+}
+
+/* Target specific components for grid areas */
+.cards-container > :nth-child(1) {
+  grid-area: exchange;
+}
+
+.cards-container > :nth-child(2) {
+  grid-area: converter;
+}
+
+.cards-container > :nth-child(3) {
+  grid-area: work;
+  justify-self: center;
+  max-width: 500px;
+  width: 100%;
 }
 
 .footer {
@@ -157,9 +205,12 @@ export default {
 }
 
 /* Responsive design */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .cards-container {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: 
+      "exchange converter"
+      "work work";
     gap: 1.5rem;
   }
 }
@@ -167,6 +218,19 @@ export default {
 @media (max-width: 768px) {
   .title {
     font-size: 2rem;
+  }
+  
+  .cards-container {
+    grid-template-columns: 1fr;
+    grid-template-areas: 
+      "exchange"
+      "converter"
+      "work";
+    gap: 1.5rem;
+  }
+  
+  .cards-container > :nth-child(3) {
+    max-width: none;
   }
 }
 
