@@ -1,15 +1,15 @@
 <template>
   <div class="exchange-card" :class="{ 'loading': loading, 'error': error }">
-    <div v-if="loading" class="loading-state">
+    <div v-if="loading" class="loading-state" role="status" aria-live="polite">
       <div class="spinner"></div>
       <p>Carregando cotação...</p>
     </div>
 
-    <div v-else-if="error" class="error-state">
+    <div v-else-if="error" class="error-state" role="alert" aria-live="assertive">
       <div class="error-icon">⚠️</div>
       <h3>Erro ao carregar dados</h3>
       <p>{{ error }}</p>
-      <button @click="$emit('retry')" class="retry-button">
+      <button @click="$emit('retry')" class="retry-button" aria-label="Tentar novamente">
         Tentar novamente
       </button>
     </div>
@@ -36,7 +36,7 @@
         </div>
       </div>
 
-      <button @click="$emit('refresh')" class="refresh-button" :disabled="loading">
+      <button @click="$emit('refresh')" class="refresh-button" :disabled="loading" aria-label="Atualizar cotação">
         <span v-if="loading" class="spinner-small"></span>
         <span v-else>🔄 Atualizar</span>
       </button>

@@ -5,10 +5,11 @@
     
     <div class="work-calculator-form">
       <div class="input-group">
-        <label class="input-label required">Valor em Dólares (USD)</label>
+        <label class="input-label required" :for="grossAmountId">Valor em Dólares (USD)</label>
         <div class="input-wrapper">
           <span class="currency-prefix">$</span>
           <input 
+            :id="grossAmountId"
             :value="grossAmount" 
             type="number" 
             class="amount-input"
@@ -16,19 +17,22 @@
             step="0.01"
             min="0"
             @input="$emit('update:grossAmount', $event.target.value)"
+            aria-label="Valor em Dólares (USD)"
           />
         </div>
+        <span v-if="grossAmountError" class="input-error">{{ grossAmountError }}</span>
       </div>
 
       <!-- Fees Input -->
       <div class="input-group">
-        <label class="input-label">Taxas e Comissões</label>
+        <label class="input-label" :for="feesId">Taxas e Comissões</label>
         <div class="input-wrapper">
-          <select class="tax-type-select" :value="feesType" @change="$emit('update:feesType', $event.target.value)">
+          <select class="tax-type-select" :value="feesType" @change="$emit('update:feesType', $event.target.value)" aria-label="Tipo de taxa">
             <option value="percent">%</option>
             <option value="value">Valor</option>
           </select>
           <input
+            :id="feesId"
             :value="fees"
             type="number"
             class="amount-input"
@@ -36,25 +40,28 @@
             step="0.01"
             min="0"
             @input="$emit('update:fees', $event.target.value)"
+            aria-label="Taxas e Comissões"
           />
           <template v-if="feesType === 'value'">
-            <select class="currency-select" :value="feesCurrency" @change="$emit('update:feesCurrency', $event.target.value)">
+            <select class="currency-select" :value="feesCurrency" @change="$emit('update:feesCurrency', $event.target.value)" aria-label="Moeda da taxa">
               <option value="USD">USD</option>
               <option value="BRL">BRL</option>
             </select>
           </template>
         </div>
+        <span v-if="feesError" class="input-error">{{ feesError }}</span>
       </div>
 
       <!-- Taxes Input -->
       <div class="input-group">
-        <label class="input-label">Impostos e Outras Taxas</label>
+        <label class="input-label" :for="taxesId">Impostos e Outras Taxas</label>
         <div class="input-wrapper">
-          <select class="tax-type-select" :value="taxesType" @change="$emit('update:taxesType', $event.target.value)">
+          <select class="tax-type-select" :value="taxesType" @change="$emit('update:taxesType', $event.target.value)" aria-label="Tipo de imposto">
             <option value="percent">%</option>
             <option value="value">Valor</option>
           </select>
           <input
+            :id="taxesId"
             :value="taxes"
             type="number"
             class="amount-input"
@@ -62,25 +69,28 @@
             step="0.01"
             min="0"
             @input="$emit('update:taxes', $event.target.value)"
+            aria-label="Impostos e Outras Taxas"
           />
           <template v-if="taxesType === 'value'">
-            <select class="currency-select" :value="taxesCurrency" @change="$emit('update:taxesCurrency', $event.target.value)">
+            <select class="currency-select" :value="taxesCurrency" @change="$emit('update:taxesCurrency', $event.target.value)" aria-label="Moeda do imposto">
               <option value="USD">USD</option>
               <option value="BRL">BRL</option>
             </select>
           </template>
         </div>
+        <span v-if="taxesError" class="input-error">{{ taxesError }}</span>
       </div>
 
       <!-- Extra Income Input -->
       <div class="input-group">
-        <label class="input-label">Você gostaria de adicionar alguma renda extra? (opicional)</label>
+        <label class="input-label" :for="extraIncomeId">Você gostaria de adicionar alguma renda extra? (opicional)</label>
         <div class="input-wrapper">
-          <select class="currency-select" :value="extraCurrency" @change="$emit('update:extraCurrency', $event.target.value)">
+          <select class="currency-select" :value="extraCurrency" @change="$emit('update:extraCurrency', $event.target.value)" aria-label="Moeda da renda extra">
             <option value="USD">USD</option>
             <option value="BRL">BRL</option>
           </select>
           <input
+            :id="extraIncomeId"
             :value="extraIncome"
             type="number"
             class="amount-input"
@@ -88,19 +98,22 @@
             step="0.01"
             min="0"
             @input="$emit('update:extraIncome', $event.target.value)"
+            aria-label="Renda extra"
           />
         </div>
+        <span v-if="extraIncomeError" class="input-error">{{ extraIncomeError }}</span>
       </div>
 
       <!-- Extra Tax Input (conditional) -->
       <div class="input-group" v-if="extraIncome && parseFloat(extraIncome) > 0">
-        <label class="input-label">Impostos e Outras taxas sobre a Renda Extra</label>
+        <label class="input-label" :for="extraTaxId">Impostos e Outras taxas sobre a Renda Extra</label>
         <div class="input-wrapper">
-          <select class="tax-type-select" :value="extraTaxType" @change="$emit('update:extraTaxType', $event.target.value)">
+          <select class="tax-type-select" :value="extraTaxType" @change="$emit('update:extraTaxType', $event.target.value)" aria-label="Tipo de taxa sobre renda extra">
             <option value="value">Valor</option>
             <option value="percent">%</option>
           </select>
           <input
+            :id="extraTaxId"
             :value="extraTax"
             type="number"
             class="amount-input"
@@ -108,14 +121,16 @@
             step="0.01"
             min="0"
             @input="$emit('update:extraTax', $event.target.value)"
+            aria-label="Taxa sobre renda extra"
           />
           <template v-if="extraTaxType === 'value'">
-            <select class="currency-select" :value="extraTaxCurrency" @change="$emit('update:extraTaxCurrency', $event.target.value)">
+            <select class="currency-select" :value="extraTaxCurrency" @change="$emit('update:extraTaxCurrency', $event.target.value)" aria-label="Moeda da taxa sobre renda extra">
               <option value="USD">USD</option>
               <option value="BRL">BRL</option>
             </select>
           </template>
         </div>
+        <span v-if="extraTaxError" class="input-error">{{ extraTaxError }}</span>
       </div>
 
       <div class="calculation-results">
@@ -169,7 +184,7 @@
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { calculateFeeOrTax, calculateExtraIncome, calculateExtraTax } from '../utils/workCalculatorUtils'
 
 export default {
@@ -317,6 +332,20 @@ export default {
       }).format(amountInBRL)
     })
 
+    // Accessibility: generate unique IDs for inputs
+    const grossAmountId = 'gross-amount-input'
+    const feesId = 'fees-input'
+    const taxesId = 'taxes-input'
+    const extraIncomeId = 'extra-income-input'
+    const extraTaxId = 'extra-tax-input'
+
+    // Error states
+    const grossAmountError = computed(() => parseFloat(props.grossAmount) < 0 ? 'Valor não pode ser negativo.' : '')
+    const feesError = computed(() => parseFloat(props.fees) < 0 ? 'Taxa não pode ser negativa.' : '')
+    const taxesError = computed(() => parseFloat(props.taxes) < 0 ? 'Imposto não pode ser negativo.' : '')
+    const extraIncomeError = computed(() => parseFloat(props.extraIncome) < 0 ? 'Renda extra não pode ser negativa.' : '')
+    const extraTaxError = computed(() => parseFloat(props.extraTax) < 0 ? 'Taxa sobre renda extra não pode ser negativa.' : '')
+
     return {
       formattedExchangeRate,
       feesAmount,
@@ -329,7 +358,9 @@ export default {
       extraIncomeBRL,
       formattedExtraIncome,
       extraTaxBRL,
-      formattedExtraTax
+      formattedExtraTax,
+      grossAmountId, feesId, taxesId, extraIncomeId, extraTaxId,
+      grossAmountError, feesError, taxesError, extraIncomeError, extraTaxError
     }
   }
 }
@@ -529,6 +560,13 @@ export default {
   font-size: 0.9rem;
   color: var(--text-secondary);
   font-weight: 500;
+}
+
+.input-error {
+  color: var(--error-color, #e53e3e);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  display: block;
 }
 
 /* Responsive design */

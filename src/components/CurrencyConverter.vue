@@ -4,10 +4,11 @@
     
     <div class="converter-form">
       <div class="input-group">
-        <label class="input-label">{{ isUsdToBrl ? 'Dólares (USD)' : 'Reais (BRL)' }}</label>
+        <label class="input-label" :for="inputId">{{ isUsdToBrl ? 'Dólares (USD)' : 'Reais (BRL)' }}</label>
         <div class="input-wrapper">
           <span class="currency-prefix">{{ isUsdToBrl ? '$' : 'R$' }}</span>
           <input 
+            :id="inputId"
             :value="inputAmount" 
             type="number" 
             class="amount-input"
@@ -15,11 +16,13 @@
             step="0.01"
             min="0"
             @input="$emit('update:inputAmount', $event.target.value)"
+            aria-label="Valor para conversão"
           />
         </div>
+        <span v-if="inputError" class="input-error">{{ inputError }}</span>
       </div>
 
-      <button @click="$emit('invert')" class="invert-button">
+      <button @click="$emit('invert')" class="invert-button" aria-label="Inverter conversão">
         <span>⇅</span>
       </button>
 
@@ -41,7 +44,7 @@
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 export default {
   name: 'CurrencyConverter',
@@ -101,10 +104,21 @@ export default {
       }).format(result)
     })
 
+    // Accessibility: generate unique IDs for inputs
+    const inputId = 'currency-input'
+    // Error state
+    const inputError = computed(() => {
+      const val = parseFloat(props.inputAmount)
+      if (props.inputAmount && (isNaN(val) || val < 0)) return 'Valor inválido ou negativo.'
+      return ''
+    })
+
     return {
       formattedRate,
       formattedInverseRate,
-      convertedAmount
+      convertedAmount,
+      inputId,
+      inputError
     }
   }
 }
@@ -235,6 +249,13 @@ export default {
   font-size: 0.9rem;
   color: var(--text-secondary);
   font-weight: 500;
+}
+
+.input-error {
+  color: var(--error-color, #e53e3e);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  display: block;
 }
 
 /* Responsive design */
