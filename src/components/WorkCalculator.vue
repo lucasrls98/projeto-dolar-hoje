@@ -78,6 +78,10 @@
       <div class="input-group" v-if="extraIncome && parseFloat(extraIncome) > 0">
         <label class="input-label">Impostos e Outras taxas sobre a Renda Extra</label>
         <div class="input-wrapper">
+          <select class="tax-type-select" :value="extraTaxType" @change="$emit('update:extraTaxType', $event.target.value)">
+            <option value="value">Valor</option>
+            <option value="percent">%</option>
+          </select>
           <input
             :value="extraTax"
             type="number"
@@ -87,7 +91,15 @@
             min="0"
             @input="$emit('update:extraTax', $event.target.value)"
           />
-          <span class="currency-suffix">{{ extraCurrency }}</span>
+          <template v-if="extraTaxType === 'percent'">
+            <span class="currency-suffix">%</span>
+          </template>
+          <template v-else>
+            <select class="currency-select" :value="extraTaxCurrency" @change="$emit('update:extraTaxCurrency', $event.target.value)">
+              <option value="USD">USD</option>
+              <option value="BRL">BRL</option>
+            </select>
+          </template>
         </div>
       </div>
 
@@ -164,9 +176,17 @@ export default {
     extraTax: {
       type: String,
       default: ''
+    },
+    extraTaxType: {
+      type: String,
+      default: 'percent'
+    },
+    extraTaxCurrency: {
+      type: String,
+      default: 'USD'
     }
   },
-  emits: ['update:grossAmount', 'update:fees', 'update:taxes', 'update:extraIncome', 'update:extraCurrency', 'update:extraTax'],
+  emits: ['update:grossAmount', 'update:fees', 'update:taxes', 'update:extraIncome', 'update:extraCurrency', 'update:extraTax', 'update:extraTaxType', 'update:extraTaxCurrency'],
   setup(props) {
     const formattedExchangeRate = computed(() => {
       if (!props.exchangeRate) return '--'
@@ -408,6 +428,21 @@ export default {
   margin-right: 0.5rem;
   border: 1px solid var(--border-color);
   border-radius: 8px;
+  padding: 0.5rem 0.2rem;
+  font-size: 0.7rem;
+  color: var(--text-primary);
+  background: var(--background-color);
+  outline: none;
+  transition: border 0.2s;
+}
+.currency-select:focus {
+  border-color: var(--primary-color);
+}
+
+.tax-type-select {
+  margin-right: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   padding: 0.5rem 0.75rem;
   font-size: 1rem;
   color: var(--text-primary);
@@ -415,7 +450,7 @@ export default {
   outline: none;
   transition: border 0.2s;
 }
-.currency-select:focus {
+.tax-type-select:focus {
   border-color: var(--primary-color);
 }
 

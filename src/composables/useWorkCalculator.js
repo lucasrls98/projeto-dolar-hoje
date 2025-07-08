@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 export function useWorkCalculator() {
   const grossAmount = ref('')
@@ -7,6 +7,15 @@ export function useWorkCalculator() {
   const extraIncome = ref('')
   const extraCurrency = ref('USD')
   const extraTax = ref('')
+  const extraTaxType = ref('value') // 'value' or 'percent'
+  const extraTaxCurrency = ref('USD')
+
+  // Keep extraTaxCurrency in sync with extraCurrency by default
+  watch(extraCurrency, (val) => {
+    if (extraTaxType.value === 'value') {
+      extraTaxCurrency.value = val
+    }
+  })
 
   const updateGrossAmount = (value) => {
     grossAmount.value = value
@@ -32,6 +41,18 @@ export function useWorkCalculator() {
     extraTax.value = value
   }
 
+  const updateExtraTaxType = (value) => {
+    extraTaxType.value = value
+    // When switching to 'value', default to extraCurrency
+    if (value === 'value') {
+      extraTaxCurrency.value = extraCurrency.value
+    }
+  }
+
+  const updateExtraTaxCurrency = (value) => {
+    extraTaxCurrency.value = value
+  }
+
   const resetCalculator = () => {
     grossAmount.value = ''
     fees.value = ''
@@ -39,6 +60,8 @@ export function useWorkCalculator() {
     extraIncome.value = ''
     extraCurrency.value = 'USD'
     extraTax.value = ''
+    extraTaxType.value = 'value'
+    extraTaxCurrency.value = 'USD'
   }
 
   return {
@@ -48,12 +71,16 @@ export function useWorkCalculator() {
     extraIncome,
     extraCurrency,
     extraTax,
+    extraTaxType,
+    extraTaxCurrency,
     updateGrossAmount,
     updateFees,
     updateTaxes,
     updateExtraIncome,
     updateExtraCurrency,
     updateExtraTax,
+    updateExtraTaxType,
+    updateExtraTaxCurrency,
     resetCalculator
   }
 } 
