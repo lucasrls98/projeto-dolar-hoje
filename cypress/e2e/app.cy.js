@@ -35,4 +35,27 @@ describe('Dólar Hoje App E2E', () => {
     cy.get('input[aria-label="Taxa sobre renda extra"]').clear().type('20')
     cy.get('.result-value.taxes').last().should('be.visible')
   })
+
+  it('calculates extra tax correctly for BRL and USD currencies', () => {
+    cy.get('.work-calculator-card').should('be.visible')
+    // Set up base values
+    cy.get('input[aria-label="Valor em Dólares (USD)"]').clear().type('1000')
+    cy.get('input[aria-label="Taxas e Comissões"]').clear().type('0')
+    cy.get('input[aria-label="Impostos e Outras Taxas"]').clear().type('0')
+    // Add extra income in BRL
+    cy.get('select[aria-label="Moeda da renda extra"]').select('BRL')
+    cy.get('input[aria-label="Renda extra"]').clear().type('4998')
+    // Set extra tax type to percent and currency to BRL
+    cy.get('select[aria-label="Tipo de taxa sobre renda extra"]').select('%')
+    cy.get('input[aria-label="Taxa sobre renda extra"]').clear().type('13')
+    // Should show 13% of 4998 = 649,74 (pt-BR format)
+    cy.get('.result-label').contains('Taxas sobre Renda Extra:').parent().find('.result-value.taxes').should('contain', '649,74')
+    // Now set extra tax currency to USD and check value
+    cy.get('select[aria-label="Moeda da taxa sobre renda extra"]').select('USD')
+    // Should show 13% of 4998 USD * exchangeRate (5) = 3248,70
+    cy.get('.result-label').contains('Taxas sobre Renda Extra:').parent().find('.result-value.taxes').should('contain', '3.248,70')
+    // Check Valor Total Bruto and Desconto Total are visible
+    cy.get('.result-label').contains('Valor Total Bruto:').parent().find('.result-value.gross-total').should('exist')
+    cy.get('.result-label').contains('Desconto Total:').parent().find('.result-value.discount').should('exist')
+  })
 }) 
