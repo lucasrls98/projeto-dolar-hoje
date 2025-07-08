@@ -38,11 +38,13 @@
           :taxes="taxes"
           :extra-income="extraIncome"
           :extra-currency="extraCurrency"
+          :extra-tax="extraTax"
           @update:gross-amount="updateGrossAmount"
           @update:fees="updateFees"
           @update:taxes="updateTaxes"
           @update:extra-income="updateExtraIncome"
           @update:extra-currency="updateExtraCurrency"
+          @update:extra-tax="updateExtraTax"
         />
       </div>
     </main>
@@ -96,7 +98,9 @@ export default {
       extraIncome,
       extraCurrency,
       updateExtraIncome,
-      updateExtraCurrency
+      updateExtraCurrency,
+      extraTax,
+      updateExtraTax
     } = useWorkCalculator()
 
     return {
@@ -113,6 +117,7 @@ export default {
       taxes,
       extraIncome,
       extraCurrency,
+      extraTax,
       fetchExchangeRate,
       invertConversion,
       updateInputAmount,
@@ -120,7 +125,8 @@ export default {
       updateFees,
       updateTaxes,
       updateExtraIncome,
-      updateExtraCurrency
+      updateExtraCurrency,
+      updateExtraTax
     }
   }
 }

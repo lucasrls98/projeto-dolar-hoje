@@ -6,6 +6,7 @@ export function useWorkCalculator() {
   const taxes = ref('')
   const extraIncome = ref('')
   const extraCurrency = ref('USD')
+  const extraTax = ref('')
 
   const updateGrossAmount = (value) => {
     grossAmount.value = value
@@ -27,12 +28,17 @@ export function useWorkCalculator() {
     extraCurrency.value = value
   }
 
+  const updateExtraTax = (value) => {
+    extraTax.value = value
+  }
+
   const resetCalculator = () => {
     grossAmount.value = ''
     fees.value = ''
     taxes.value = ''
     extraIncome.value = ''
     extraCurrency.value = 'USD'
+    extraTax.value = ''
   }
 
   return {
@@ -41,11 +47,13 @@ export function useWorkCalculator() {
     taxes,
     extraIncome,
     extraCurrency,
+    extraTax,
     updateGrossAmount,
     updateFees,
     updateTaxes,
     updateExtraIncome,
     updateExtraCurrency,
+    updateExtraTax,
     resetCalculator
   }
 } 

@@ -74,6 +74,23 @@
         </div>
       </div>
 
+      <!-- Extra Tax Input (conditional) -->
+      <div class="input-group" v-if="extraIncome && parseFloat(extraIncome) > 0">
+        <label class="input-label">Impostos e Outras taxas sobre a Renda Extra</label>
+        <div class="input-wrapper">
+          <input
+            :value="extraTax"
+            type="number"
+            class="amount-input"
+            placeholder="0.00"
+            step="0.01"
+            min="0"
+            @input="$emit('update:extraTax', $event.target.value)"
+          />
+          <span class="currency-suffix">{{ extraCurrency }}</span>
+        </div>
+      </div>
+
       <div class="calculation-results">
         <div class="result-item">
           <span class="result-label">Valor Bruto:</span>
@@ -93,6 +110,10 @@
         <div class="result-item" v-if="extraIncomeBRL > 0">
           <span class="result-label">Renda Extra:</span>
           <span class="result-value extra">+{{ formattedExtraIncome }}</span>
+        </div>
+        <div class="result-item" v-if="extraTaxBRL > 0">
+          <span class="result-label">Taxas sobre Renda Extra:</span>
+          <span class="result-value taxes">-{{ formattedExtraTax }}</span>
         </div>
         
         <div class="result-item total">
@@ -139,9 +160,13 @@ export default {
     extraCurrency: {
       type: String,
       default: 'USD'
+    },
+    extraTax: {
+      type: String,
+      default: ''
     }
   },
-  emits: ['update:grossAmount', 'update:fees', 'update:taxes', 'update:extraIncome', 'update:extraCurrency'],
+  emits: ['update:grossAmount', 'update:fees', 'update:taxes', 'update:extraIncome', 'update:extraCurrency', 'update:extraTax'],
   setup(props) {
     const formattedExchangeRate = computed(() => {
       if (!props.exchangeRate) return '--'
@@ -184,8 +209,19 @@ export default {
       }
     })
 
+    // Extra tax in BRL
+    const extraTaxBRL = computed(() => {
+      const tax = parseFloat(props.extraTax) || 0
+      if (!props.exchangeRate) return 0
+      if (props.extraCurrency === 'USD') {
+        return tax * props.exchangeRate
+      } else {
+        return tax
+      }
+    })
+
     const netAmount = computed(() => {
-      return grossAmountNumber.value - feesAmount.value - taxesAmount.value
+      return grossAmountNumber.value - feesAmount.value - taxesAmount.value + extraIncomeBRL.value - extraTaxBRL.value
     })
 
     const formattedGrossAmount = computed(() => {
@@ -231,9 +267,19 @@ export default {
       }).format(extraIncomeBRL.value)
     })
 
+    const formattedExtraTax = computed(() => {
+      if (!props.exchangeRate) return 'R$ 0,00'
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(extraTaxBRL.value)
+    })
+
     const formattedNetAmount = computed(() => {
       if (!props.exchangeRate) return 'R$ 0,00'
-      const amountInBRL = (netAmount.value * props.exchangeRate) + extraIncomeBRL.value
+      const amountInBRL = (netAmount.value * props.exchangeRate) + extraIncomeBRL.value - extraTaxBRL.value
       return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',
@@ -252,7 +298,9 @@ export default {
       formattedTaxesAmount,
       formattedNetAmount,
       extraIncomeBRL,
-      formattedExtraIncome
+      formattedExtraIncome,
+      extraTaxBRL,
+      formattedExtraTax
     }
   }
 }
