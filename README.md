@@ -1,6 +1,6 @@
 # 💵 Dólar Hoje
 
-A beautiful Vue.js application that displays the current dollar exchange rate in Brazilian Real (BRL) in real-time.
+A beautiful Vue.js application that displays the current dollar exchange rate in Brazilian Real (BRL) in real-time and calculates net income.
 
 ## ✨ Features
 
@@ -10,6 +10,12 @@ A beautiful Vue.js application that displays the current dollar exchange rate in
 - **Error Handling**: Graceful error states with retry functionality
 - **Mobile Responsive**: Works perfectly on all device sizes
 - **Loading States**: Smooth loading animations
+- **Work Calculator (Trabalhando na Gringa)**: Calculate your net BRL income from international work, including:
+  - Multi-currency support for fees, taxes, and extra income (USD or BRL)
+  - Automatic conversion of all values to BRL for final results
+  - New summary fields: **Valor Total Bruto** (Total Gross Value) and **Desconto Total** (Total Discount)
+  - Extra tax logic for additional income, with flexible input (percent or value, USD or BRL)
+  - Robust input validation and clamping for all fields
 
 ## 🚀 Quick Start
 
@@ -34,19 +40,34 @@ Make sure you have [Node.js](https://nodejs.org/) installed (version 16 or highe
 
 ## 🧪 Testing the Application
 
-### Manual Testing
+### Input Validation & Clamping
 
-1. **Load the application** - You should see a beautiful card with the dollar exchange rate
-2. **Check loading state** - The app shows a spinner while fetching data
-3. **Test refresh button** - Click "🔄 Atualizar" to manually refresh the rate
-4. **Test error handling** - Disconnect your internet and refresh to see error state
-5. **Test responsiveness** - Resize your browser window to test mobile layout
+- All numeric and currency input fields (including the currency converter and work calculator) now **clamp negative values to zero**. If a user tries to type a negative number, the field will immediately show `0`.
+- This ensures robust, user-friendly input validation and prevents accidental negative values in financial calculations.
 
-### Browser Testing
+### Automated Testing
 
-- **Chrome/Edge**: Open Developer Tools (F12) and test responsive design
-- **Mobile**: Use browser dev tools to simulate mobile devices
-- **Network**: Use Network tab to simulate slow connections or offline mode
+#### Unit Tests (Vitest)
+
+- Run all unit tests:
+  ```bash
+  npx vitest run
+  ```
+- These tests cover all calculation logic, including clamping, fee/tax/extra income, and edge cases.
+
+#### End-to-End Tests (Cypress)
+
+- Run all E2E tests:
+  ```bash
+  npx cypress run --e2e
+  ```
+- Cypress tests expect clamping to zero for negative input, and are robust to DOM updates (they re-select elements after each input change).
+- Both unit and E2E tests are required for full quality assurance.
+- The Work Calculator is covered by both unit and E2E tests, including:
+  - Calculation of all fields in BRL, regardless of input currency
+  - Correct handling of new summary fields (**Valor Total Bruto**, **Desconto Total**)
+  - Extra tax logic for additional income (percent or value, USD or BRL)
+  - Robust input validation and clamping for all calculator fields
 
 ### API Testing
 
