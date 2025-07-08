@@ -16,7 +16,8 @@
             placeholder="0.00"
             step="0.01"
             min="0"
-            @input="$emit('update:grossAmount', $event.target.value)"
+            @input="sanitizeNumberInput('grossAmount', $event.target.value)"
+            @keydown="blockPlusMinusKeydown"
             aria-label="Valor em Dólares (USD)"
           />
         </div>
@@ -39,7 +40,22 @@
             placeholder="0.00"
             step="0.01"
             min="0"
-            @input="$emit('update:fees', $event.target.value)"
+            v-if="feesType === 'percent'"
+            @input="clampPercent('fees', $event.target.value, 'percent')"
+            @keydown="blockPlusMinusKeydown"
+            aria-label="Taxas e Comissões"
+          />
+          <input
+            :id="feesId"
+            :value="fees"
+            type="number"
+            class="amount-input"
+            placeholder="0.00"
+            step="0.01"
+            min="0"
+            v-else
+            @input="sanitizeNumberInput('fees', $event.target.value)"
+            @keydown="blockPlusMinusKeydown"
             aria-label="Taxas e Comissões"
           />
           <template v-if="feesType === 'value'">
@@ -68,7 +84,22 @@
             placeholder="0.00"
             step="0.01"
             min="0"
-            @input="$emit('update:taxes', $event.target.value)"
+            v-if="taxesType === 'percent'"
+            @input="clampPercent('taxes', $event.target.value, 'percent')"
+            @keydown="blockPlusMinusKeydown"
+            aria-label="Impostos e Outras Taxas"
+          />
+          <input
+            :id="taxesId"
+            :value="taxes"
+            type="number"
+            class="amount-input"
+            placeholder="0.00"
+            step="0.01"
+            min="0"
+            v-else
+            @input="sanitizeNumberInput('taxes', $event.target.value)"
+            @keydown="blockPlusMinusKeydown"
             aria-label="Impostos e Outras Taxas"
           />
           <template v-if="taxesType === 'value'">
@@ -97,7 +128,8 @@
             placeholder="0.00"
             step="0.01"
             min="0"
-            @input="$emit('update:extraIncome', $event.target.value)"
+            @input="sanitizeNumberInput('extraIncome', $event.target.value)"
+            @keydown="blockPlusMinusKeydown"
             aria-label="Renda extra"
           />
         </div>
@@ -120,7 +152,22 @@
             placeholder="0.00"
             step="0.01"
             min="0"
-            @input="$emit('update:extraTax', $event.target.value)"
+            v-if="extraTaxType === 'percent'"
+            @input="clampPercent('extraTax', $event.target.value, 'percent')"
+            @keydown="blockPlusMinusKeydown"
+            aria-label="Taxa sobre renda extra"
+          />
+          <input
+            :id="extraTaxId"
+            :value="extraTax"
+            type="number"
+            class="amount-input"
+            placeholder="0.00"
+            step="0.01"
+            min="0"
+            v-else
+            @input="sanitizeNumberInput('extraTax', $event.target.value)"
+            @keydown="blockPlusMinusKeydown"
             aria-label="Taxa sobre renda extra"
           />
           <template v-if="extraTaxType === 'value'">
@@ -167,6 +214,16 @@
           <span class="result-label">Taxas sobre Renda Extra:</span>
           <span class="result-value taxes">-{{ formattedExtraTax }}</span>
         </div>
+
+        <div class="result-item total-gross" v-if="(grossAmountNumber > 0 || extraIncomeBRL > 0)">
+          <span class="result-label">Valor Total Bruto:</span>
+          <span class="result-value gross-total">{{ formattedTotalGross }}</span>
+        </div>
+
+        <div class="result-item total-discount" v-if="(feesAmount > 0 || taxesAmount > 0 || extraTaxBRL > 0)">
+          <span class="result-label">Desconto Total:</span>
+          <span class="result-value discount">-{{ formattedTotalDiscount }}</span>
+        </div>
         
         <div class="result-item total">
           <span class="result-label">Valor Líquido:</span>
@@ -184,7 +241,7 @@
 </template>
 
 <script>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { calculateFeeOrTax, calculateExtraIncome, calculateExtraTax } from '../utils/workCalculatorUtils'
 
 export default {
@@ -211,7 +268,7 @@ export default {
     'update:extraIncome', 'update:extraCurrency',
     'update:extraTax', 'update:extraTaxType', 'update:extraTaxCurrency'
   ],
-  setup(props) {
+  setup(props, { emit }) {
     const formattedExchangeRate = computed(() => {
       if (!props.exchangeRate) return '--'
       return new Intl.NumberFormat('pt-BR', {
@@ -323,14 +380,42 @@ export default {
 
     const formattedNetAmount = computed(() => {
       if (!props.exchangeRate) return 'R$ 0,00'
-      const amountInBRL = (netAmount.value * props.exchangeRate) + (extraIncomeBRL.value - extraTaxBRL.value)
+      const netAmountBRL = grossAmountNumber.value * props.exchangeRate - feesAmount.value - taxesAmount.value + extraIncomeBRL.value - extraTaxBRL.value;
       return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      }).format(amountInBRL)
+      }).format(netAmountBRL)
     })
+
+    const totalGross = computed(() => {
+      return grossAmountNumber.value * props.exchangeRate + extraIncomeBRL.value;
+    });
+
+    const formattedTotalGross = computed(() => {
+      if (!props.exchangeRate) return 'R$ 0,00';
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(totalGross.value);
+    });
+
+    const totalDiscount = computed(() => {
+      return feesAmount.value + taxesAmount.value + extraTaxBRL.value;
+    });
+
+    const formattedTotalDiscount = computed(() => {
+      if (!props.exchangeRate) return 'R$ 0,00';
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(totalDiscount.value);
+    });
 
     // Accessibility: generate unique IDs for inputs
     const grossAmountId = 'gross-amount-input'
@@ -341,10 +426,55 @@ export default {
 
     // Error states
     const grossAmountError = computed(() => parseFloat(props.grossAmount) < 0 ? 'Valor não pode ser negativo.' : '')
-    const feesError = computed(() => parseFloat(props.fees) < 0 ? 'Taxa não pode ser negativa.' : '')
-    const taxesError = computed(() => parseFloat(props.taxes) < 0 ? 'Imposto não pode ser negativo.' : '')
+    const feesError = computed(() => {
+      const val = parseFloat(props.fees)
+      if (val < 0) return 'Taxa não pode ser negativa.'
+      if (props.feesType === 'percent' && val > 100) return 'Taxa não pode ser maior que 100%.'
+      return ''
+    })
+    const taxesError = computed(() => {
+      const val = parseFloat(props.taxes)
+      if (val < 0) return 'Imposto não pode ser negativo.'
+      if (props.taxesType === 'percent' && val > 100) return 'Imposto não pode ser maior que 100%.'
+      return ''
+    })
     const extraIncomeError = computed(() => parseFloat(props.extraIncome) < 0 ? 'Renda extra não pode ser negativa.' : '')
-    const extraTaxError = computed(() => parseFloat(props.extraTax) < 0 ? 'Taxa sobre renda extra não pode ser negativa.' : '')
+    const extraTaxError = computed(() => {
+      const val = parseFloat(props.extraTax)
+      if (val < 0) return 'Taxa sobre renda extra não pode ser negativa.'
+      if (props.extraTaxType === 'percent' && val > 100) return 'Taxa sobre renda extra não pode ser maior que 100%.'
+      return ''
+    })
+
+    function sanitizeNumberInput(field, value) {
+      // Allow only digits and a single dot, block math symbols and letters
+      let sanitized = value.replace(/[^\d.]/g, '');
+      // Only one dot allowed
+      const parts = sanitized.split('.');
+      if (parts.length > 2) {
+        sanitized = parts[0] + '.' + parts.slice(1).join('');
+      }
+      emit('update:' + field, sanitized);
+    }
+
+    function clampPercent(field, value, type) {
+      // Sanitize first
+      let sanitized = value.replace(/[^\d.]/g, '');
+      const parts = sanitized.split('.');
+      if (parts.length > 2) {
+        sanitized = parts[0] + '.' + parts.slice(1).join('');
+      }
+      let num = parseFloat(sanitized);
+      if (isNaN(num) || num < 0) num = 0;
+      if (type === 'percent' && num > 100) num = 100;
+      emit('update:' + field, num.toString());
+    }
+
+    function blockPlusMinusKeydown(e) {
+      if (e.key === '+' || e.key === '-') {
+        e.preventDefault();
+      }
+    }
 
     return {
       formattedExchangeRate,
@@ -359,8 +489,13 @@ export default {
       formattedExtraIncome,
       extraTaxBRL,
       formattedExtraTax,
+      totalDiscount,
+      formattedTotalDiscount,
       grossAmountId, feesId, taxesId, extraIncomeId, extraTaxId,
-      grossAmountError, feesError, taxesError, extraIncomeError, extraTaxError
+      grossAmountError, feesError, taxesError, extraIncomeError, extraTaxError,
+      clampPercent, sanitizeNumberInput, blockPlusMinusKeydown,
+      totalGross,
+      formattedTotalGross
     }
   }
 }
@@ -521,6 +656,22 @@ export default {
   font-weight: 600;
 }
 
+.result-item.total-discount {
+  border-top: 2px solid var(--warning-color); /* Changed from primary-color to warning-color */
+  border-bottom: none;
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+  font-weight: 600;
+}
+
+.result-item.total-gross {
+  border-top: 2px solid var(--success-color); /* Changed from primary-color to success-color */
+  border-bottom: none;
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+  font-weight: 600;
+}
+
 .result-label {
   color: var(--text-secondary);
   font-weight: 500;
@@ -550,6 +701,16 @@ export default {
 
 .result-value.extra {
   color: var(--accent-color);
+}
+
+.result-value.discount {
+  color: var(--warning-color); /* Changed from error-color to warning-color */
+  font-size: 1.1rem;
+}
+
+.result-value.gross-total {
+  color: var(--success-color);
+  font-size: 1.1rem;
 }
 
 .work-calculator-info {

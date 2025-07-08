@@ -2,10 +2,10 @@
   <div class="app-container">
     <header class="header">
       <h1 class="title">
-        <span class="title-emoji">💵</span>
-        <span class="title-text">Dólar Hoje</span>
+        <span class="title-emoji">🪙</span>
+        <span class="title-text">Calculadora da Gringa</span>
       </h1>
-      <p class="subtitle">Cotação em tempo real</p>
+      <p class="subtitle">💵Cotação em tempo real</p>
     </header>
 
     <main class="main-content">

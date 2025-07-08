@@ -16,6 +16,7 @@
             step="0.01"
             min="0"
             @input="$emit('update:inputAmount', $event.target.value)"
+            @keydown="blockPlusMinusKeydown"
             aria-label="Valor para conversão"
           />
         </div>
@@ -118,7 +119,12 @@ export default {
       formattedInverseRate,
       convertedAmount,
       inputId,
-      inputError
+      inputError,
+      blockPlusMinusKeydown: (e) => {
+        if (e.key === '+' || e.key === '-') {
+          e.preventDefault();
+        }
+      }
     }
   }
 }
