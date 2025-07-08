@@ -443,8 +443,8 @@ export default {
   margin-right: 0.5rem;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-  font-size: 1rem;
+  padding: 0.5rem 0.2rem;
+  font-size: 0.7rem;
   color: var(--text-primary);
   background: var(--background-color);
   outline: none;
