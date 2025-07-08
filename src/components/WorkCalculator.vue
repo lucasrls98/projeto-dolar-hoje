@@ -54,6 +54,26 @@
         </div>
       </div>
 
+      <!-- Extra Income Input -->
+      <div class="input-group">
+        <label class="input-label">Você gostaria de adicionar alguma renda extra? (opicional)</label>
+        <div class="input-wrapper">
+          <select class="currency-select" :value="extraCurrency" @change="$emit('update:extraCurrency', $event.target.value)">
+            <option value="USD">USD</option>
+            <option value="BRL">BRL</option>
+          </select>
+          <input
+            :value="extraIncome"
+            type="number"
+            class="amount-input"
+            placeholder="0.00"
+            step="0.01"
+            min="0"
+            @input="$emit('update:extraIncome', $event.target.value)"
+          />
+        </div>
+      </div>
+
       <div class="calculation-results">
         <div class="result-item">
           <span class="result-label">Valor Bruto:</span>
@@ -68,6 +88,11 @@
         <div class="result-item" v-if="taxesAmount > 0">
           <span class="result-label">Impostos ({{ taxes }}%):</span>
           <span class="result-value taxes">-{{ formattedTaxesAmount }}</span>
+        </div>
+
+        <div class="result-item" v-if="extraIncomeBRL > 0">
+          <span class="result-label">Renda Extra:</span>
+          <span class="result-value extra">+{{ formattedExtraIncome }}</span>
         </div>
         
         <div class="result-item total">
@@ -106,9 +131,17 @@ export default {
     taxes: {
       type: String,
       default: ''
+    },
+    extraIncome: {
+      type: String,
+      default: ''
+    },
+    extraCurrency: {
+      type: String,
+      default: 'USD'
     }
   },
-  emits: ['update:grossAmount', 'update:fees', 'update:taxes'],
+  emits: ['update:grossAmount', 'update:fees', 'update:taxes', 'update:extraIncome', 'update:extraCurrency'],
   setup(props) {
     const formattedExchangeRate = computed(() => {
       if (!props.exchangeRate) return '--'
@@ -138,6 +171,17 @@ export default {
 
     const taxesAmount = computed(() => {
       return (grossAmountNumber.value * taxesPercentage.value) / 100
+    })
+
+    // Extra income in BRL
+    const extraIncomeBRL = computed(() => {
+      const extra = parseFloat(props.extraIncome) || 0
+      if (!props.exchangeRate) return 0
+      if (props.extraCurrency === 'USD') {
+        return extra * props.exchangeRate
+      } else {
+        return extra
+      }
     })
 
     const netAmount = computed(() => {
@@ -177,9 +221,19 @@ export default {
       }).format(amountInBRL)
     })
 
+    const formattedExtraIncome = computed(() => {
+      if (!props.exchangeRate) return 'R$ 0,00'
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(extraIncomeBRL.value)
+    })
+
     const formattedNetAmount = computed(() => {
       if (!props.exchangeRate) return 'R$ 0,00'
-      const amountInBRL = netAmount.value * props.exchangeRate
+      const amountInBRL = (netAmount.value * props.exchangeRate) + extraIncomeBRL.value
       return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',
@@ -196,7 +250,9 @@ export default {
       formattedGrossAmount,
       formattedFeesAmount,
       formattedTaxesAmount,
-      formattedNetAmount
+      formattedNetAmount,
+      extraIncomeBRL,
+      formattedExtraIncome
     }
   }
 }
@@ -300,6 +356,21 @@ export default {
   opacity: 0.5;
 }
 
+.currency-select {
+  margin-right: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  color: var(--text-primary);
+  background: var(--background-color);
+  outline: none;
+  transition: border 0.2s;
+}
+.currency-select:focus {
+  border-color: var(--primary-color);
+}
+
 .calculation-results {
   background: var(--background-color);
   border-radius: 12px;
@@ -352,6 +423,10 @@ export default {
 .result-value.net {
   color: var(--primary-color);
   font-size: 1.1rem;
+}
+
+.result-value.extra {
+  color: var(--accent-color);
 }
 
 .work-calculator-info {
