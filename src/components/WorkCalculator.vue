@@ -20,37 +20,55 @@
         </div>
       </div>
 
+      <!-- Fees Input -->
       <div class="input-group">
-        <label class="input-label">Taxas e Comissões (%)</label>
+        <label class="input-label">Taxas e Comissões</label>
         <div class="input-wrapper">
-          <input 
-            :value="fees" 
-            type="number" 
+          <select class="tax-type-select" :value="feesType" @change="$emit('update:feesType', $event.target.value)">
+            <option value="percent">%</option>
+            <option value="value">Valor</option>
+          </select>
+          <input
+            :value="fees"
+            type="number"
             class="amount-input"
             placeholder="0.00"
             step="0.01"
             min="0"
-            max="100"
             @input="$emit('update:fees', $event.target.value)"
           />
-          <span class="currency-suffix">%</span>
+          <template v-if="feesType === 'value'">
+            <select class="currency-select" :value="feesCurrency" @change="$emit('update:feesCurrency', $event.target.value)">
+              <option value="USD">USD</option>
+              <option value="BRL">BRL</option>
+            </select>
+          </template>
         </div>
       </div>
 
+      <!-- Taxes Input -->
       <div class="input-group">
-        <label class="input-label">Impostos e Outras Taxas (%)</label>
+        <label class="input-label">Impostos e Outras Taxas</label>
         <div class="input-wrapper">
-          <input 
-            :value="taxes" 
-            type="number" 
+          <select class="tax-type-select" :value="taxesType" @change="$emit('update:taxesType', $event.target.value)">
+            <option value="percent">%</option>
+            <option value="value">Valor</option>
+          </select>
+          <input
+            :value="taxes"
+            type="number"
             class="amount-input"
             placeholder="0.00"
             step="0.01"
             min="0"
-            max="100"
             @input="$emit('update:taxes', $event.target.value)"
           />
-          <span class="currency-suffix">%</span>
+          <template v-if="taxesType === 'value'">
+            <select class="currency-select" :value="taxesCurrency" @change="$emit('update:taxesCurrency', $event.target.value)">
+              <option value="USD">USD</option>
+              <option value="BRL">BRL</option>
+            </select>
+          </template>
         </div>
       </div>
 
@@ -91,10 +109,7 @@
             min="0"
             @input="$emit('update:extraTax', $event.target.value)"
           />
-          <template v-if="extraTaxType === 'percent'">
-            <span class="currency-suffix">%</span>
-          </template>
-          <template v-else>
+          <template v-if="extraTaxType === 'value'">
             <select class="currency-select" :value="extraTaxCurrency" @change="$emit('update:extraTaxCurrency', $event.target.value)">
               <option value="USD">USD</option>
               <option value="BRL">BRL</option>
@@ -110,12 +125,22 @@
         </div>
         
         <div class="result-item" v-if="feesAmount > 0">
-          <span class="result-label">Taxas ({{ fees }}%):</span>
+          <span class="result-label">
+            Taxas (
+            <template v-if="feesType === 'percent'">{{ fees }}%</template>
+            <template v-else>{{ fees }} {{ feesCurrency }}</template>
+            ):
+          </span>
           <span class="result-value fees">-{{ formattedFeesAmount }}</span>
         </div>
         
         <div class="result-item" v-if="taxesAmount > 0">
-          <span class="result-label">Impostos ({{ taxes }}%):</span>
+          <span class="result-label">
+            Impostos (
+            <template v-if="taxesType === 'percent'">{{ taxes }}%</template>
+            <template v-else>{{ taxes }} {{ taxesCurrency }}</template>
+            ):
+          </span>
           <span class="result-value taxes">-{{ formattedTaxesAmount }}</span>
         </div>
 
@@ -145,48 +170,32 @@
 
 <script>
 import { computed } from 'vue'
+import { calculateFeeOrTax, calculateExtraIncome, calculateExtraTax } from '../utils/workCalculatorUtils'
 
 export default {
   name: 'WorkCalculator',
   props: {
-    exchangeRate: {
-      type: Number,
-      default: null
-    },
-    grossAmount: {
-      type: String,
-      default: ''
-    },
-    fees: {
-      type: String,
-      default: ''
-    },
-    taxes: {
-      type: String,
-      default: ''
-    },
-    extraIncome: {
-      type: String,
-      default: ''
-    },
-    extraCurrency: {
-      type: String,
-      default: 'USD'
-    },
-    extraTax: {
-      type: String,
-      default: ''
-    },
-    extraTaxType: {
-      type: String,
-      default: 'percent'
-    },
-    extraTaxCurrency: {
-      type: String,
-      default: 'USD'
-    }
+    exchangeRate: { type: Number, default: null },
+    grossAmount: { type: String, default: '' },
+    fees: { type: String, default: '' },
+    feesType: { type: String, default: 'percent' },
+    feesCurrency: { type: String, default: 'USD' },
+    taxes: { type: String, default: '' },
+    taxesType: { type: String, default: 'percent' },
+    taxesCurrency: { type: String, default: 'USD' },
+    extraIncome: { type: String, default: '' },
+    extraCurrency: { type: String, default: 'USD' },
+    extraTax: { type: String, default: '' },
+    extraTaxType: { type: String, default: 'value' },
+    extraTaxCurrency: { type: String, default: 'USD' }
   },
-  emits: ['update:grossAmount', 'update:fees', 'update:taxes', 'update:extraIncome', 'update:extraCurrency', 'update:extraTax', 'update:extraTaxType', 'update:extraTaxCurrency'],
+  emits: [
+    'update:grossAmount',
+    'update:fees', 'update:feesType', 'update:feesCurrency',
+    'update:taxes', 'update:taxesType', 'update:taxesCurrency',
+    'update:extraIncome', 'update:extraCurrency',
+    'update:extraTax', 'update:extraTaxType', 'update:extraTaxCurrency'
+  ],
   setup(props) {
     const formattedExchangeRate = computed(() => {
       if (!props.exchangeRate) return '--'
@@ -198,50 +207,52 @@ export default {
       }).format(props.exchangeRate)
     })
 
-    const grossAmountNumber = computed(() => {
-      return parseFloat(props.grossAmount) || 0
-    })
+    const grossAmountNumber = computed(() => parseFloat(props.grossAmount) || 0)
 
-    const feesPercentage = computed(() => {
-      return parseFloat(props.fees) || 0
-    })
+    // Fees in BRL
+    const feesAmount = computed(() =>
+      calculateFeeOrTax({
+        amount: props.fees,
+        type: props.feesType,
+        currency: props.feesCurrency,
+        base: props.grossAmount,
+        exchangeRate: props.exchangeRate
+      })
+    )
 
-    const taxesPercentage = computed(() => {
-      return parseFloat(props.taxes) || 0
-    })
-
-    const feesAmount = computed(() => {
-      return (grossAmountNumber.value * feesPercentage.value) / 100
-    })
-
-    const taxesAmount = computed(() => {
-      return (grossAmountNumber.value * taxesPercentage.value) / 100
-    })
+    // Taxes in BRL
+    const taxesAmount = computed(() =>
+      calculateFeeOrTax({
+        amount: props.taxes,
+        type: props.taxesType,
+        currency: props.taxesCurrency,
+        base: props.grossAmount,
+        exchangeRate: props.exchangeRate
+      })
+    )
 
     // Extra income in BRL
-    const extraIncomeBRL = computed(() => {
-      const extra = parseFloat(props.extraIncome) || 0
-      if (!props.exchangeRate) return 0
-      if (props.extraCurrency === 'USD') {
-        return extra * props.exchangeRate
-      } else {
-        return extra
-      }
-    })
+    const extraIncomeBRL = computed(() =>
+      calculateExtraIncome({
+        amount: props.extraIncome,
+        currency: props.extraCurrency,
+        exchangeRate: props.exchangeRate
+      })
+    )
 
     // Extra tax in BRL
-    const extraTaxBRL = computed(() => {
-      const tax = parseFloat(props.extraTax) || 0
-      if (!props.exchangeRate) return 0
-      if (props.extraCurrency === 'USD') {
-        return tax * props.exchangeRate
-      } else {
-        return tax
-      }
-    })
+    const extraTaxBRL = computed(() =>
+      calculateExtraTax({
+        amount: props.extraTax,
+        type: props.extraTaxType,
+        currency: props.extraTaxCurrency,
+        extraIncome: props.extraIncome,
+        exchangeRate: props.exchangeRate
+      })
+    )
 
     const netAmount = computed(() => {
-      return grossAmountNumber.value - feesAmount.value - taxesAmount.value + extraIncomeBRL.value - extraTaxBRL.value
+      return grossAmountNumber.value - feesAmount.value - taxesAmount.value
     })
 
     const formattedGrossAmount = computed(() => {
@@ -257,24 +268,22 @@ export default {
 
     const formattedFeesAmount = computed(() => {
       if (!props.exchangeRate) return 'R$ 0,00'
-      const amountInBRL = feesAmount.value * props.exchangeRate
       return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      }).format(amountInBRL)
+      }).format(feesAmount.value)
     })
 
     const formattedTaxesAmount = computed(() => {
       if (!props.exchangeRate) return 'R$ 0,00'
-      const amountInBRL = taxesAmount.value * props.exchangeRate
       return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      }).format(amountInBRL)
+      }).format(taxesAmount.value)
     })
 
     const formattedExtraIncome = computed(() => {
@@ -299,7 +308,7 @@ export default {
 
     const formattedNetAmount = computed(() => {
       if (!props.exchangeRate) return 'R$ 0,00'
-      const amountInBRL = (netAmount.value * props.exchangeRate) + extraIncomeBRL.value - extraTaxBRL.value
+      const amountInBRL = (netAmount.value * props.exchangeRate) + (extraIncomeBRL.value - extraTaxBRL.value)
       return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
         currency: 'BRL',

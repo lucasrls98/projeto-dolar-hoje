@@ -35,7 +35,11 @@
           :exchange-rate="exchangeRate"
           :gross-amount="grossAmount"
           :fees="fees"
+          :fees-type="feesType"
+          :fees-currency="feesCurrency"
           :taxes="taxes"
+          :taxes-type="taxesType"
+          :taxes-currency="taxesCurrency"
           :extra-income="extraIncome"
           :extra-currency="extraCurrency"
           :extra-tax="extraTax"
@@ -43,7 +47,11 @@
           :extra-tax-currency="extraTaxCurrency"
           @update:gross-amount="updateGrossAmount"
           @update:fees="updateFees"
+          @update:fees-type="updateFeesType"
+          @update:fees-currency="updateFeesCurrency"
           @update:taxes="updateTaxes"
+          @update:taxes-type="updateTaxesType"
+          @update:taxes-currency="updateTaxesCurrency"
           @update:extra-income="updateExtraIncome"
           @update:extra-currency="updateExtraCurrency"
           @update:extra-tax="updateExtraTax"
@@ -95,10 +103,18 @@ export default {
     const {
       grossAmount,
       fees,
+      feesType,
+      feesCurrency,
       taxes,
+      taxesType,
+      taxesCurrency,
       updateGrossAmount,
       updateFees,
+      updateFeesType,
+      updateFeesCurrency,
       updateTaxes,
+      updateTaxesType,
+      updateTaxesCurrency,
       extraIncome,
       extraCurrency,
       updateExtraIncome,
@@ -122,7 +138,11 @@ export default {
       convertedAmount,
       grossAmount,
       fees,
+      feesType,
+      feesCurrency,
       taxes,
+      taxesType,
+      taxesCurrency,
       extraIncome,
       extraCurrency,
       extraTax,
@@ -133,7 +153,11 @@ export default {
       updateInputAmount,
       updateGrossAmount,
       updateFees,
+      updateFeesType,
+      updateFeesCurrency,
       updateTaxes,
+      updateTaxesType,
+      updateTaxesCurrency,
       updateExtraIncome,
       updateExtraCurrency,
       updateExtraTax,
