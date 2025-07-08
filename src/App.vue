@@ -62,6 +62,7 @@
     </main>
 
     <footer class="footer">
+      <p>Criado por @Lucas Rolando</p>
       <p>Dados fornecidos por APIs públicas de câmbio</p>
     </footer>
   </div>
