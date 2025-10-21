@@ -31,14 +31,6 @@ jobs:
     - name: Build application
       run: npm run build
     
-    - name: Start development server
-      run: npm run dev &
-      env:
-        NODE_ENV: test
-    
-    - name: Wait for server to be ready
-      run: npx wait-on http://localhost:3000 --timeout 30000
-    
     - name: Run Playwright tests
       run: npm run test:e2e
     
@@ -77,14 +69,6 @@ jobs:
     - name: Build application
       run: npm run build
     
-    - name: Start development server
-      run: npm run dev &
-      env:
-        NODE_ENV: test
-    
-    - name: Wait for server to be ready
-      run: npx wait-on http://localhost:3000 --timeout 30000
-    
     - name: Run mobile tests
       run: npx playwright test --project="Mobile Chrome" --project="Mobile Safari"
     
@@ -116,14 +100,6 @@ jobs:
     - name: Build application
       run: npm run build
     
-    - name: Start development server
-      run: npm run dev &
-      env:
-        NODE_ENV: test
-    
-    - name: Wait for server to be ready
-      run: npx wait-on http://localhost:3000 --timeout 30000
-    
     - name: Run accessibility tests
       run: npx playwright test accessibility.spec.js
     
@@ -154,14 +130,6 @@ jobs:
     
     - name: Build application
       run: npm run build
-    
-    - name: Start development server
-      run: npm run dev &
-      env:
-        NODE_ENV: test
-    
-    - name: Wait for server to be ready
-      run: npx wait-on http://localhost:3000 --timeout 30000
     
     - name: Run performance tests
       run: npx playwright test performance.spec.js
