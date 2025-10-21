@@ -55,14 +55,38 @@ Make sure you have [Node.js](https://nodejs.org/) installed (version 16 or highe
   ```
 - These tests cover all calculation logic, including clamping, fee/tax/extra income, and edge cases.
 
-#### End-to-End Tests (Cypress)
+#### End-to-End Tests (Playwright)
 
 - Run all E2E tests:
   ```bash
+  npm run test:e2e
+  ```
+- Run tests in headed mode (visible browser):
+  ```bash
+  npm run test:e2e:headed
+  ```
+- Run tests with interactive UI:
+  ```bash
+  npm run test:e2e:ui
+  ```
+- Debug tests:
+  ```bash
+  npm run test:e2e:debug
+  ```
+
+**Test Coverage:**
+- **Component Tests**: Exchange Rate Card, Currency Converter, Work Calculator
+- **Integration Tests**: Complete user workflows and data consistency
+- **Accessibility Tests**: WCAG 2.1 AA compliance, keyboard navigation, screen reader support
+- **Performance Tests**: Load times, Core Web Vitals, memory usage, mobile performance
+- **Cross-browser Testing**: Chrome, Firefox, Safari, Edge, Mobile browsers
+
+**Legacy Cypress Tests:**
+- Original Cypress tests are still available:
+  ```bash
   npx cypress run --e2e
   ```
-- Cypress tests expect clamping to zero for negative input, and are robust to DOM updates (they re-select elements after each input change).
-- Both unit and E2E tests are required for full quality assurance.
+- Both Playwright and Cypress tests are required for full quality assurance.
 - The Work Calculator is covered by both unit and E2E tests, including:
   - Calculation of all fields in BRL, regardless of input currency
   - Correct handling of new summary fields (**Valor Total Bruto**, **Desconto Total**)
